@@ -1,31 +1,36 @@
-name: Manual Custom Board Compile
+name: Custom Display Example I2C Compile
 
 on:
-  workflow_dispatch: # Forces the custom manual configuration button to display
+  workflow_dispatch: # Keeps the manual run button active
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository Code
+      - name: Checkout Codebase
         uses: actions/checkout@v4
         with:
           ref: v2
 
-      - name: Setup Arduino IDE Environment
+      - name: Setup Arduino CLI Environment
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Configure Spacehuhn Indexing
+      - name: Install ESP8266 Deauther Core Dependencies
         run: |
           arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/SpacehuhnTech/arduino/main/package_spacehuhn_index.json
           arduino-cli core install deauther:esp8266 --additional-urls https://raw.githubusercontent.com/SpacehuhnTech/arduino/main/package_spacehuhn_index.json
 
-      - name: Compile and Output Binary File
+      - name: Compile Specifically with I2C Macro Configuration
         run: |
-          arduino-cli compile --fqbn deauther:esp8266:d1_mini esp8266_deauther/esp8266_deauther.ino --output-dir ./build_output
+          # The key fix: injecting the -DDISPLAY_EXAMPLE_I2C macro forces the compiler to build the correct block
+          arduino-cli compile --fqbn deauther:esp8266:nodemcu --build-property "build.extra_flags=-DDISPLAY_EXAMPLE_I2C" esp8266_deauther/esp8266_deauther.ino --output-dir ./build_output
 
-      - name: Publish Artifact Package
+      - name: Rename File for Clarity
+        run: |
+          mv ./build_output/esp8266_deauther.ino.bin ./build_output/esp8266_deauther_display_example_i2c.bin
+
+      - name: Export Custom Binary
         uses: actions/upload-artifact@v4
         with:
-          name: custom-deauther-binaries
-          path: ./build_output/*.bin
+          name: custom-i2c-deauther-firmware
+          path: ./build_output/esp8266_deauther_display_example_i2c.bin
