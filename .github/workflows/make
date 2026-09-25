@@ -1,0 +1,31 @@
+name: Manual Custom Board Compile
+
+on:
+  workflow_dispatch: # Forces the custom manual configuration button to display
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+        with:
+          ref: v2
+
+      - name: Setup Arduino IDE Environment
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Configure Spacehuhn Indexing
+        run: |
+          arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/SpacehuhnTech/arduino/main/package_spacehuhn_index.json
+          arduino-cli core install deauther:esp8266 --additional-urls https://raw.githubusercontent.com/SpacehuhnTech/arduino/main/package_spacehuhn_index.json
+
+      - name: Compile and Output Binary File
+        run: |
+          arduino-cli compile --fqbn deauther:esp8266:d1_mini esp8266_deauther/esp8266_deauther.ino --output-dir ./build_output
+
+      - name: Publish Artifact Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-deauther-binaries
+          path: ./build_output/*.bin
