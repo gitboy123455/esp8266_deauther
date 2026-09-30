@@ -18,25 +18,25 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Initialize and Install Cores
+      - name: Install Official ESP8266 Core Package
         run: |
-          # Pull official indices dynamically sourced via the local config file
-          arduino-cli core update-index --config-file ./arduino-cli.yaml
+          arduino-cli config init
+          # Explicitly set the stable core URL alongside the legacy deauther dependency index
+          arduino-cli config set board_manager.additional_urls http://esp8266.com
           
-          # Install the specific Deauther package dependency
-          arduino-cli core install deauther:esp8266 --config-file ./arduino-cli.yaml
+          arduino-cli core update-index
+          arduino-cli core install esp8266:esp8266
 
       - name: Compile Custom DSTIKE OLED Target
         run: |
-          # Compile the binary while overriding the specific DSTIKE OLED preprocessor macro
+          # Use the generic ESP8266 engine mapping out 4MB Flash and DOUT constraints
+          # Appends your -DDSTIKE_DEAUTHER_OLED preprocessor macro cleanly via extra flags
           arduino-cli compile \
-            --config-file ./arduino-cli.yaml \
-            --fqbn deauther:esp8266:dstyle:xtal=80,FlashMode=dout,FlashSize=4M1M,led=16 \
+            --fqbn esp8266:esp8266:generic:xtal=80,vt=flash,exception=disabled,ResetMethod=nodemcu,CrystalFreq=26,FlashFreq=40,FlashMode=dout,FlashSize=4M1M,led=2,sdk=221b,ip=lm2f,dbg=Disabled,lvl=None,wipe=none \
             --build-property "compiler.cpp.extra_flags=-DDSTIKE_DEAUTHER_OLED" \
             --output-dir ./build_dstike_oled \
             ./esp8266_deauther/esp8266_deauther.ino
 
-      # CORRECTED ACTION NAME BELOW
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
         with:
