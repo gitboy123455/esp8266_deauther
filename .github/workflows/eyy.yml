@@ -20,21 +20,21 @@ jobs:
 
       - name: Initialize indices (Silent Log Mode)
         run: |
-          # Use --no-color to prevent logging display wrapper loops
+          # Prevent logging progress loop errors
           arduino-cli core update-index --config-file ./arduino-cli.yaml --no-color
 
       - name: Install Deauther Toolchain Package
         run: |
-          # Explicitly install the custom Deauther core profile mapped inside the local yaml config
+          # Use local tracking configuration to fetch the Spacehuhn core tools
           arduino-cli core install deauther:esp8266 --config-file ./arduino-cli.yaml --no-color
 
       - name: Compile Custom DSTIKE OLED Target
         run: |
-          # Using the exact core board name: deauther:esp8266:esp8266
-          # Appends your -DDSTIKE_DEAUTHER_OLED preprocessor macro cleanly via extra flags
+          # Targets 'd1_mini' directly within the deauther package registry layout
+          # Appends your -DDSTIKE_DEAUTHER_OLED macro to trigger correct configurations
           arduino-cli compile \
             --config-file ./arduino-cli.yaml \
-            --fqbn deauther:esp8266:esp8266:xtal=80,FlashMode=dout,FlashSize=4M1M,led=16 \
+            --fqbn deauther:esp8266:d1_mini \
             --build-property "compiler.cpp.extra_flags=-DDSTIKE_DEAUTHER_OLED" \
             --output-dir ./build_dstike_oled \
             ./esp8266_deauther/esp8266_deauther.ino --no-color
@@ -44,4 +44,3 @@ jobs:
         with:
           name: Deauther-DSTIKE-OLED-Firmware
           path: ./build_dstike_oled/*.bin
-
