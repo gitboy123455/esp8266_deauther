@@ -1,0 +1,43 @@
+name: Build DSTIKE OLED Binary
+
+on:
+  push:
+    branches: [ master, main, v2 ]
+  pull_request:
+    branches: [ master, main, v2 ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Initialize and Install Cores
+        run: |
+          # Pull official indices dynamically sourced via the local config file
+          arduino-cli core update-index --config-file ./arduino-cli.yaml
+          
+          # Install the specific Deauther package dependency
+          arduino-cli core install deauther:esp8266 --config-file ./arduino-cli.yaml
+
+      - name: Compile Custom DSTIKE OLED Target
+        run: |
+          # Compile the binary while overriding the specific DSTIKE OLED preprocessor macro
+          arduino-cli compile \
+            --config-file ./arduino-cli.yaml \
+            --fqbn deauther:esp8266:dstyle:xtal=80,FlashMode=dout,FlashSize=4M1M,led=16 \
+            --build-property "compiler.cpp.extra_flags=-DDSTIKE_DEAUTHER_OLED" \
+            --output-dir ./build_dstike_oled \
+            ./esp8266_deauther/esp8266_deauther.ino
+
+      - name: Upload Binary Artifact
+        uses: actions/artifacts@v4
+        with:
+          name: Deauther-DSTIKE-OLED-Firmware
+          path: ./build_dstike_oled/*.bin
