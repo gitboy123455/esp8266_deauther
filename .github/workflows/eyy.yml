@@ -18,27 +18,30 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Initialize and Install Cores via Local Config
+      - name: Initialize indices (Silent Log Mode)
         run: |
-          # Update the core board index using the repository's native tracking file
-          arduino-cli core update-index --config-file ./arduino-cli.yaml
-          
-          # Install the specific deauther core tools locked down in this repository's layout
-          arduino-cli core install deauther:esp8266 --config-file ./arduino-cli.yaml
+          # Use --no-color to prevent logging display wrapper loops
+          arduino-cli core update-index --config-file ./arduino-cli.yaml --no-color
+
+      - name: Install Deauther Toolchain Package
+        run: |
+          # Explicitly install the custom Deauther core profile mapped inside the local yaml config
+          arduino-cli core install deauther:esp8266 --config-file ./arduino-cli.yaml --no-color
 
       - name: Compile Custom DSTIKE OLED Target
         run: |
-          # Use the core deauther board definition (deauther:esp8266:deauther) mapped by the workspace setup
-          # Pass the -DDSTIKE_DEAUTHER_OLED preprocessor macro cleanly via extra flags
+          # Using the exact core board name: deauther:esp8266:esp8266
+          # Appends your -DDSTIKE_DEAUTHER_OLED preprocessor macro cleanly via extra flags
           arduino-cli compile \
             --config-file ./arduino-cli.yaml \
-            --fqbn deauther:esp8266:deauther:xtal=80,FlashMode=dout,FlashSize=4M1M,led=16 \
+            --fqbn deauther:esp8266:esp8266:xtal=80,FlashMode=dout,FlashSize=4M1M,led=16 \
             --build-property "compiler.cpp.extra_flags=-DDSTIKE_DEAUTHER_OLED" \
             --output-dir ./build_dstike_oled \
-            ./esp8266_deauther/esp8266_deauther.ino
+            ./esp8266_deauther/esp8266_deauther.ino --no-color
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Deauther-DSTIKE-OLED-Firmware
           path: ./build_dstike_oled/*.bin
+
