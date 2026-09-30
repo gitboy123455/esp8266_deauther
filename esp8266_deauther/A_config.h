@@ -225,12 +225,12 @@
 // ===== DISPLAY ===== //
   #define SSD1306_I2C
   #define FLIP_DIPLAY true
-  #define DISPLAY_TEXT "Hardware by DSTIKE"
+  #define DISPLAY_TEXT "Hardware by Sayantan Roy"
 
 // ===== BUTTONS ===== //
   #define BUTTON_UP 12
-  #define BUTTON_DOWN 13
-  #define BUTTON_A 14
+  #define BUTTON_DOWN 14
+  #define BUTTON_A 13
 
 #elif defined(DSTIKE_DEAUTHER_OLED_V2) || defined(DSTIKE_DEAUTHER_OLED_V2_5)  || defined(DSTIKE_DEAUTHER_OLED_V3)
 
