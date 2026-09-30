@@ -36,8 +36,9 @@ jobs:
             --output-dir ./build_dstike_oled \
             ./esp8266_deauther/esp8266_deauther.ino
 
+      # CORRECTED ACTION NAME BELOW
       - name: Upload Binary Artifact
-        uses: actions/artifacts@v4
+        uses: actions/upload-artifact@v4
         with:
           name: Deauther-DSTIKE-OLED-Firmware
           path: ./build_dstike_oled/*.bin
